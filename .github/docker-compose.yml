@@ -1,14 +1,16 @@
-version: "5"
+version: "3.9"
+
 services:
   kaiburrMongodb:
     image: mongo:latest
     container_name: "kaiburrMongodb"
     ports:
-      - 27017:27017
+      - "27017:27017"
+  
   kaiburr-api:
     image: kaiburr-api
     container_name: "kaiburr-api"
     ports:
-      - 9090:8080
-    links:
+      - "9090:8080"
+    depends_on:
       - kaiburrMongodb
