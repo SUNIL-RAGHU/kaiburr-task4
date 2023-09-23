@@ -39,7 +39,7 @@ jobs:
       - name: Set up Docker
         uses: docker/setup-docker@v2
         with:
-          version: '2.9'
+          version: '3.9'
 
       - name: Build Docker image
         run: docker build -t kaiburr-api .
