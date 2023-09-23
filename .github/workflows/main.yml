@@ -1,0 +1,72 @@
+name: kaiburr-api
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v2
+
+      - name: Set up JDK 11
+        uses: actions/setup-java@v2
+        with:
+          java-version: '11'
+
+      - name: Cache Maven Dependencies
+        uses: actions/cache@v2
+        with:
+          path: ~/.m2/repository
+          key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
+          restore-keys: |
+            ${{ runner.os }}-maven-
+
+      - name: Build with Maven
+        run: mvn clean package
+
+  dockerize:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v2
+
+      - name: Set up Docker
+        uses: docker/setup-docker@v2
+        with:
+          version: '20.10.7'
+
+      - name: Build Docker image
+        run: docker build -t kaiburr-api .
+
+      - name: Set up kaiburrMongodb
+        run: docker run -d --name kaiburrMongodb mongo:latest
+
+      - name: Create Docker network
+        run: docker network create kaiburr-network
+
+      - name: Dockerize kaiburr-api
+        run: docker run -d --name kaiburr-api --network kaiburr-network kaiburr-api
+
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v2
+
+      - name: Set up Docker-Compose
+        run: |
+          sudo apt-get install -y docker-compose
+          docker-compose --version
+
+      - name: Copy Docker-Compose File
+        run: cp .github/docker-compose.yml docker-compose.yml
+
+      - name: Run Docker-Compose
+        run: docker-compose up -d getup in gitlab
